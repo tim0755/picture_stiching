@@ -123,40 +123,78 @@ public class MainActivity extends AppCompatActivity {
         Log.e("tim_hu", "result@RGB ratio,r1:"+ratioR1+" g1:"+ratioG1+" b1:"+ratioB1+" r2:"+ratioR2+" g2:"+ratioG2+" b2:"+ratioB2);
 
         int [] desData = new int[(srcBitmap1.getWidth() + srcBitmap2.getWidth() - overlapWidth) * srcBitmap1.getHeight()];
-        int desIndex=0;
-        double deltaR1 = (1 - ratioR1) / srcBitmap1.getWidth();
-        double deltaG1 = (1 - ratioG1) / srcBitmap1.getWidth();
-        double deltaB1 = (1 - ratioB1) / srcBitmap1.getWidth();
-        double deltaR2 = (1 - ratioR2) / srcBitmap2.getWidth();
-        double deltaG2 = (1 - ratioG2) / srcBitmap2.getWidth();
-        double deltaB2 = (1 - ratioB2) / srcBitmap2.getWidth();
+        double deltaR1 = 2 * (1 - ratioR1) / srcBitmap1.getWidth();
+        double deltaG1 = 2 * (1 - ratioG1) / srcBitmap1.getWidth();
+        double deltaB1 = 2 * (1 - ratioB1) / srcBitmap1.getWidth();
+        double deltaR2 = 2 * (1 - ratioR2) / srcBitmap2.getWidth();
+        double deltaG2 = 2 * (1 - ratioG2) / srcBitmap2.getWidth();
+        double deltaB2 = 2 * (1 - ratioB2) / srcBitmap2.getWidth();
 
         time = System.currentTimeMillis();
+        int desIndex=0;
         for (int indexHeight = 0; indexHeight < srcBitmap1.getHeight(); indexHeight++) {
 
-            for (int indexWidth = 0; indexWidth < srcBitmap1.getWidth() - overlapWidth; indexWidth++) {
+            for (int indexWidth = 0; indexWidth < overlapWidth; indexWidth++) {
                 rgbPixel1 = srcBitmap1.getPixel(indexWidth, indexHeight);
-                desData[desIndex++] = Color.rgb((int) (Color.red(rgbPixel1)   * (1 - deltaR1 * indexWidth)),
-                                                (int) (Color.green(rgbPixel1) * (1 - deltaG1 * indexWidth)),
-                                                (int) (Color.blue(rgbPixel1)  * (1-  deltaB1 * indexWidth)));
+                rgbPixel2 = srcBitmap2.getPixel(srcBitmap2.getWidth() - overlapWidth + indexWidth, indexHeight);
+                desData[desIndex++] = Color.rgb((int) ( Color.red(rgbPixel1) * (ratioR1 + deltaR1 * indexWidth) * (indexWidth/(double)overlapWidth)
+                                                        + Color.red(rgbPixel2) * (1 - deltaR2 * ( srcBitmap1.getWidth()/2 + indexWidth)) * (1 - indexWidth/(double)overlapWidth)),
+                                                (int) ( Color.green(rgbPixel1) * (ratioG1 + deltaG1 * indexWidth) * (indexWidth/(double)overlapWidth)
+                                                        + Color.green(rgbPixel2) * (1 - deltaG2 * ( srcBitmap1.getWidth()/2 + indexWidth)) * (1 - indexWidth/(double)overlapWidth)),
+                                                (int) ( Color.blue(rgbPixel1) * (ratioG1 + deltaG1 * indexWidth) * (indexWidth/(double)overlapWidth)
+                                                        + Color.blue(rgbPixel2) * (1 - deltaB2 * ( srcBitmap1.getWidth()/2 + indexWidth)) * (1 - indexWidth/(double)overlapWidth)));
             }
 
-            for(int indexWidth = 0; indexWidth < overlapWidth; indexWidth++) {
-                rgbPixel1 = srcBitmap1.getPixel(srcBitmap1.getWidth() - overlapWidth + indexWidth, indexHeight);
-                rgbPixel2 = srcBitmap2.getPixel(indexWidth, indexHeight);
-                desData[desIndex++] = Color.rgb( (int) ( Color.red(rgbPixel1) * (1 - deltaR1 * (srcBitmap1.getWidth() - overlapWidth + indexWidth))    * (1.0 - indexWidth/(double)overlapWidth)
-                                                       + Color.red(rgbPixel2) * (ratioR2 + deltaR2*indexWidth) * (indexWidth/(double)overlapWidth)),
-                                                 (int) ( Color.green(rgbPixel1) * (1 - deltaG1 * (srcBitmap1.getWidth() - overlapWidth + indexWidth))     * (1.0 - indexWidth/(double)overlapWidth)
-                                                       + Color.green(rgbPixel2) * (ratioG2 + deltaG2*indexWidth) * (indexWidth/(double)overlapWidth) ),
-                                                 (int) ( Color.blue(rgbPixel1) * (1-  deltaB1 * (srcBitmap1.getWidth() - overlapWidth + indexWidth))      * (1.0 - indexWidth/(double)overlapWidth)
-                                                       + Color.blue(rgbPixel2)  * (ratioB2 + deltaB2*indexWidth) * (indexWidth/(double)overlapWidth)));
+            for (int indexWidth = overlapWidth; indexWidth < srcBitmap1.getWidth()/2; indexWidth++) {
+                rgbPixel1 = srcBitmap1.getPixel(indexWidth, indexHeight);
+                desData[desIndex++] = Color.rgb((int) (Color.red(rgbPixel1)   * (ratioR1 + deltaR1 * indexWidth)),
+                                                (int) (Color.green(rgbPixel1) * (ratioG1 + deltaG1 * indexWidth)),
+                                                (int) (Color.blue(rgbPixel1)  * (ratioB1 + deltaB1 * indexWidth)));
             }
 
-            for(int indexWidth = overlapWidth; indexWidth < srcBitmap2.getWidth(); indexWidth++) {
+            for (int indexWidth = srcBitmap1.getWidth()/2; indexWidth < srcBitmap1.getWidth() - overlapWidth; indexWidth++) {
+                rgbPixel1 = srcBitmap1.getPixel(indexWidth, indexHeight);
+                desData[desIndex++] = Color.rgb((int) (Color.red(rgbPixel1)   * (1 - deltaR1 * (indexWidth - srcBitmap1.getWidth()/2))),
+                                                (int) (Color.green(rgbPixel1) * (1 - deltaG1 * (indexWidth - srcBitmap1.getWidth()/2))),
+                                                (int) (Color.blue(rgbPixel1)  * (1 - deltaB1 * (indexWidth - srcBitmap1.getWidth()/2))));
+            }
+
+            int offsetSrc = srcBitmap1.getWidth() - overlapWidth;
+            for(int indexWidth = offsetSrc; indexWidth < srcBitmap1.getWidth(); indexWidth++) {
+                rgbPixel1 = srcBitmap1.getPixel(indexWidth, indexHeight);
+                rgbPixel2 = srcBitmap2.getPixel(indexWidth - offsetSrc, indexHeight);
+                desData[desIndex++] = Color.rgb( (int) ( Color.red(rgbPixel1) * (1 - deltaR1 * (indexWidth - srcBitmap1.getWidth()/2)) * (1.0 - (indexWidth - offsetSrc)/(double)overlapWidth)
+                                                       + Color.red(rgbPixel2) * (ratioR2 + deltaR2*(indexWidth- offsetSrc)) * ((indexWidth- offsetSrc)/(double)overlapWidth)),
+                                                 (int) ( Color.green(rgbPixel1) * (1 - deltaG1 * (indexWidth - srcBitmap1.getWidth()/2)) * (1.0 - (indexWidth - offsetSrc)/(double)overlapWidth)
+                                                       + Color.green(rgbPixel2) * (ratioG2 + deltaG2*(indexWidth- offsetSrc)) * ((indexWidth- offsetSrc)/(double)overlapWidth)),
+                                                 (int) ( Color.blue(rgbPixel1) * (1 - deltaB1 * (indexWidth - srcBitmap1.getWidth()/2)) * (1.0 - (indexWidth - offsetSrc)/(double)overlapWidth)
+                                                       + Color.blue(rgbPixel2) * (ratioB2 + deltaB2*(indexWidth- offsetSrc)) * ((indexWidth- offsetSrc)/(double)overlapWidth)));
+            }
+
+            for (int indexWidth = overlapWidth; indexWidth < srcBitmap2.getWidth()/2; indexWidth++) {
                 rgbPixel2 = srcBitmap2.getPixel(indexWidth, indexHeight);
                 desData[desIndex++] = Color.rgb((int) (Color.red(rgbPixel2)   * (ratioR2 + deltaR2 * indexWidth)),
                                                 (int) (Color.green(rgbPixel2) * (ratioG2 + deltaG2 * indexWidth)),
                                                 (int) (Color.blue(rgbPixel2)  * (ratioB2 + deltaB2 * indexWidth)));
+            }
+
+            for (int indexWidth = srcBitmap2.getWidth()/2; indexWidth < srcBitmap2.getWidth() - overlapWidth; indexWidth++) {
+                rgbPixel2 = srcBitmap2.getPixel(indexWidth, indexHeight);
+                desData[desIndex++] = Color.rgb((int) (Color.red(rgbPixel2)   * (1 - deltaR2 * (indexWidth - srcBitmap2.getWidth()/2))),
+                                                (int) (Color.green(rgbPixel2) * (1 - deltaG2 * (indexWidth - srcBitmap2.getWidth()/2))),
+                                                (int) (Color.blue(rgbPixel2)  * (1 - deltaB2 * (indexWidth - srcBitmap2.getWidth()/2))));
+            }
+
+            offsetSrc = srcBitmap2.getWidth() - overlapWidth;
+            for(int indexWidth = offsetSrc; indexWidth < srcBitmap2.getWidth(); indexWidth++) {
+                rgbPixel1 = srcBitmap1.getPixel(indexWidth - offsetSrc, indexHeight);
+                rgbPixel2 = srcBitmap2.getPixel(indexWidth, indexHeight);
+                desData[desIndex++] = Color.rgb( (int) ( Color.red(rgbPixel1) * (ratioR1 + deltaR1 * (indexWidth - offsetSrc)) * ((indexWidth - offsetSrc)/(double)overlapWidth)
+                                                        + Color.red(rgbPixel2) * (1 - deltaR2*(indexWidth - srcBitmap2.getWidth()/2)) * (1 - (indexWidth - offsetSrc)/(double)overlapWidth)),
+                                                (int) (Color.green(rgbPixel1) * (ratioG1 + deltaB1 * (indexWidth - offsetSrc)) * ((indexWidth - offsetSrc)/(double)overlapWidth)
+                                                        + Color.green(rgbPixel2) * (1 - deltaG2*(indexWidth - srcBitmap2.getWidth()/2)) * (1 - (indexWidth - offsetSrc)/(double)overlapWidth)),
+                                                (int) (Color.blue(rgbPixel1) * (ratioB1 + deltaB1 * (indexWidth - offsetSrc)) * ((indexWidth - offsetSrc)/(double)overlapWidth)
+                                                        + Color.blue(rgbPixel2) * (1 - deltaB2*(indexWidth - srcBitmap2.getWidth()/2)) * (1 - (indexWidth - offsetSrc)/(double)overlapWidth)));
             }
         }
         time_calc = System.currentTimeMillis() - time;
