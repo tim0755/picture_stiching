@@ -130,6 +130,10 @@ public class MainActivity extends AppCompatActivity {
         double deltaG2 = 2 * (1 - ratioG2) / srcBitmap2.getWidth();
         double deltaB2 = 2 * (1 - ratioB2) / srcBitmap2.getWidth();
 
+        //1. 图片A和B的中间保持颜色值不变
+        //2. 然后从中间往两边渐变，到最边缘渐变为Ca*Pa和Cb*Pb。其中Cn表示n图片某点的颜色值，Pn表示n图片的校正系数。Pa*Pb==1
+        //3. 两个图片的重叠区取两个图片的加权平均值，其中权值取该点在重叠区内的偏移量，该点靠近A，则A的权值更大。两个权值的和为1
+        //4. 对于双目的来说，A图的左边和B图的右边重叠，A图的右边和B图的左边重叠。需要计算两个重叠区
         time = System.currentTimeMillis();
         int desIndex=0;
         for (int indexHeight = 0; indexHeight < srcBitmap1.getHeight(); indexHeight++) {
